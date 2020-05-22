@@ -1,0 +1,60 @@
+/*
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+// Upload to Bintray
+apply plugin: 'com.jfrog.bintray'
+
+def getBintrayGpgPassword() {
+    return properties.get('bintrayGpgPassword', System.getenv('BINTRAY_GPG_PASSWORD'))
+}
+
+def getMavenCentralUsername() {
+    return properties.get('mavenCentralUsername', System.getenv('MAVEN_CENTRAL_USERNAME'))
+}
+
+def getMavenCentralPassword() {
+    return properties.get('mavenCentralPassword', System.getenv('MAVEN_CENTRAL_PASSWORD'))
+}
+
+def shouldSyncWithMavenCentral() {
+    return properties.get('syncWithMavenCentral', false)
+}
+
+def dryRunOnly() {
+    return properties.get('dryRun', false)
+}
+
+bintray {
+    File propFile = project.rootProject.file('local.properties')
+    Properties properties = new Properties()
+    properties.load(propFile.newDataInputStream())
+
+    user = properties.getProperty("bintrayUsername")
+    println("bintray user = $user")
+    key = properties.getProperty("bintrayApiKey")
+    println("bintray key = $key")
+    configurations = ['archives']
+    println("version = $bintrayVersionName")
+
+    pkg {
+        repo = bintrayRepo
+        name = bintrayName
+        desc = bintrayDescription
+        websiteUrl = projectUrl
+        issueTrackerUrl = issuesUrl
+        vcsUrl = scmUrl
+        licenses = ["$projectLicenses"]
+        dryRun = dryRunOnly()
+        override = true
+        publish = true
+        publicDownloadNumbers = true
+        version {
+            desc = bintrayDescription
+            released = new Date()
+        }
+    }
+}

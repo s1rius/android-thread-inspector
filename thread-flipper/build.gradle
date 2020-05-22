@@ -1,0 +1,30 @@
+import wtf.s1.buildsrc.*
+
+apply plugin: "com.android.library"
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply from: rootProject.file('release.gradle')
+
+android {
+    compileSdkVersion(Versions.compileSdkVersion)
+
+    defaultConfig {
+        minSdkVersion(Versions.minSdkVersion)
+        targetSdkVersion(Versions.targetSdkVersion)
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    api(project(":thread-core"))
+    api(Deps.AndroidX.Core.utils)
+    api(Deps.AndroidX.recyclerview)
+
+    api(Deps.flipper)
+    api(Deps.soloader)
+
+}
+

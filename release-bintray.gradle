@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+// Set up everything required for releasing on Bintray
+ext {
+    bintrayRepo = 'pudge'
+    bintrayName = "${GROUP}:${POM_ARTIFACT_ID}"
+    bintrayVersionName = VERSION_NAME
+    bintrayDescription = POM_DESCRIPTION
+    projectUrl = 'https://github.com/s1rius/android-thread-inspector'
+    issuesUrl = 'https://github.com/s1rius/android-thread-inspector/issues'
+    scmUrl = 'https://github.com/s1rius/android-thread-inspector.git'
+    scmConnection = 'scm:git:https://github.com/s1rius/android-thread-inspector.git'
+    scmDeveloperConnection = 'scm:git:git@github.com:s1rius/android-thread-inspector.git'
+
+    libraryName = POM_NAME
+    artifact = POM_ARTIFACT_ID
+
+    developerId = 's1rius'
+    developerName = 's1rius'
+
+    projectLicenses = 'MIT'
+}
+
+// Set up the Android Maven publication (POM etc.)
+apply from: rootProject.file('gradle/android-maven-install.gradle')
+
+// Upload to Bintray
+apply from: rootProject.file('gradle/bintray.gradle')
