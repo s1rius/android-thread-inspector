@@ -53,6 +53,8 @@ object Deps{
     const val flipperNoOp = "com.facebook.flipper:flipper-noop:0.43.0"
 
     const val soloader = "com.facebook.soloader:soloader:0.9.0"
+
+    const val epic = "me.weishu:epic:0.6.0"
 }
 
 object ClassPaths {

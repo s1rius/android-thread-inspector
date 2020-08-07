@@ -5,6 +5,7 @@ import com.facebook.flipper.core.FlipperConnection
 import com.facebook.flipper.core.FlipperPlugin
 import wtf.s1.android.thread.OnThreadCreateListener
 import wtf.s1.android.thread.S1Thread
+import wtf.s1.android.thread.ThreadInspector
 import wtf.s1.android.thread.ThreadLogImp
 
 class S1ThreadPlugin : FlipperPlugin,
@@ -13,18 +14,19 @@ class S1ThreadPlugin : FlipperPlugin,
     companion object {
         const val TAG = "s1ThreadPlugin"
         const val NEW_THREAD = "newThread"
+        const val UPDATE_THREAD = "updateThread"
     }
 
     init {
-        ThreadLogImp.addOnThreadCreateListener(this)
+        ThreadInspector.getThreadLog()?.addOnThreadCreateListener(this)
     }
 
-    var connection: FlipperConnection? = null
+    private var connection: FlipperConnection? = null
 
     override fun onConnect(connection: FlipperConnection?) {
         Log.i(TAG, "onConnect")
         this.connection = connection
-        ThreadLogImp.threadSet.forEach{
+        ThreadInspector.getAllThread()?.forEach {
             newRow(it)
         }
     }
@@ -44,10 +46,22 @@ class S1ThreadPlugin : FlipperPlugin,
         newRow(thread)
     }
 
+    override fun onThreadRun(thread: S1Thread) {
+        Log.i(TAG, "thread run $thread")
+        updateRow(thread)
+    }
+
     fun newRow(thread: S1Thread) {
         connection?.let {
             Log.i(TAG, "send message")
             it.send(NEW_THREAD, FlipperMessage(thread).toFlipperObject())
+        }
+    }
+
+    fun updateRow(thread: S1Thread) {
+        connection?.let {
+            Log.i(TAG, "update message")
+            it.send(UPDATE_THREAD, FlipperMessage(thread).toFlipperObject())
         }
     }
 }

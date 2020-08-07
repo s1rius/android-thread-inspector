@@ -2,6 +2,9 @@
 import wtf.s1.buildsrc.*
 
 buildscript {
+    ext {
+        kotlin_version = '1.3.72'
+    }
     repositories {
         google()
         jcenter()
@@ -17,6 +20,7 @@ buildscript {
         // classpath Deps.localThreadFlipperPlugin
         classpath ClassPaths.jfrogBintray
         classpath ClassPaths.dcendentsMavenPlugin
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 

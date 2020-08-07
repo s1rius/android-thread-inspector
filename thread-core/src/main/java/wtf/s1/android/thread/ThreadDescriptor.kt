@@ -26,6 +26,31 @@ data class S1Thread(val id: Long,
         thread.priority,
         thread.isDaemon,
         thread.isInterrupted)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as S1Thread
+
+        if (id != other.id) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
+    override fun toString(): String {
+        return "S1Thread(id=$id, name='$name', " +
+                "group=$group, " +
+                "state='$state', " +
+                "priority=$priority, " +
+                "isDaemon=$isDaemon, " +
+                "isInterrupted=$isInterrupted, " +
+                "createTime=$createTime)"
+    }
 }
 
 fun Int.threadState(): String {

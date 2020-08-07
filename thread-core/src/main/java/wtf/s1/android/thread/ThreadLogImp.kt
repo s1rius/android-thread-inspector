@@ -1,18 +1,16 @@
 package wtf.s1.android.thread
 
-import android.util.Log
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
-object ThreadLogImp: ThreadLog() {
+class ThreadLogImp: ThreadLog {
 
-    val threadSet: MutableSet<S1Thread> = Collections.newSetFromMap(ConcurrentHashMap())
+    private val threadSet: MutableSet<S1Thread> = Collections.newSetFromMap(ConcurrentHashMap())
 
-    val listeners = CopyOnWriteArrayList<OnThreadCreateListener>()
+    private val listeners = CopyOnWriteArrayList<OnThreadCreateListener>()
 
-    fun threadNew(t: Thread) {
-        Log.i("s1rius", t.name)
+    override fun onThreadNew(t: Thread) {
         val newThread = S1Thread(t)
         threadSet.add(newThread)
         listeners.forEach {
@@ -20,12 +18,24 @@ object ThreadLogImp: ThreadLog() {
         }
     }
 
-    fun addOnThreadCreateListener(listener: OnThreadCreateListener) {
+    override fun onThreadRun(t: Thread) {
+        val newThread = S1Thread(t)
+        threadSet.add(newThread)
+        listeners.forEach {
+            it.onThreadRun(newThread)
+        }
+    }
+
+    override fun addOnThreadCreateListener(listener: OnThreadCreateListener) {
         listeners.add(listener)
     }
 
-    fun removeOnThreadCreateListener(listener: OnThreadCreateListener) {
+    override fun removeOnThreadCreateListener(listener: OnThreadCreateListener) {
         listeners.remove(listener)
+    }
+
+    override fun getAllThread(): Collection<S1Thread> {
+        return threadSet
     }
 
 }
