@@ -8,7 +8,6 @@ import com.android.build.api.transform.TransformInvocation
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.objectweb.asm.*
-import org.objectweb.asm.commons.AdviceAdapter
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -136,83 +135,6 @@ class ThreadInspectorTransform : Transform() {
         println("transform end")
     }
 
-    class TestMethodClassAdapter(classVisitor: ClassVisitor?) :
-        ClassVisitor(Opcodes.ASM8, classVisitor), Opcodes {
-
-
-        private var isVisitThreadChildClass: Boolean = false
-
-        override fun visitSource(source: String?, debug: String?) {
-            super.visitSource(source, debug)
-            println("source string $source")
-        }
-
-        override fun visitRecordComponent(
-            name: String?,
-            descriptor: String?,
-            signature: String?
-        ): RecordComponentVisitor {
-            return super.visitRecordComponent(name, descriptor, signature)
-        }
-
-        override fun visitMethod(
-            access: Int,
-            name: String?,
-            descriptor: String?,
-            signature: String?,
-            exceptions: Array<String?>?
-        ): MethodVisitor? {
-            val mv = super.visitMethod(access, name, descriptor, signature, exceptions)
-
-            return if (isVisitThreadChildClass && name.equals("<init>")) {
-                MyMethodAdapter(
-                    mv,
-                    access,
-                    name,
-                    descriptor
-                )
-            } else {
-                mv
-            }
-        }
-
-        override fun visit(
-            version: Int,
-            access: Int,
-            name: String?,
-            signature: String?,
-            superName: String?,
-            interfaces: Array<out String>?
-        ) {
-            isVisitThreadChildClass = false
-            super.visit(version, access, name, signature, superName, interfaces)
-
-            println("super Name $superName")
-            if ("java/lang/Thread" == superName) {
-                name?.let {
-                    isVisitThreadChildClass = true
-                }
-                println("child class $name")
-            }
-
-        }
-    }
-
-    class MyMethodAdapter(methodVisitor: MethodVisitor?, access: Int , name: String?, desc: String?) : AdviceAdapter(Opcodes.ASM8, methodVisitor, access, name, desc) {
-
-        override fun onMethodEnter() {
-            super.onMethodEnter()
-            println("method name $name")
-        }
-
-        override fun onMethodExit(opcode: Int) {
-            super.onMethodExit(opcode)
-            mv.visitVarInsn(ALOAD, 0)
-            mv.visitMethodInsn(INVOKESTATIC, "wtf/s1/android/thread/ThreadLog", "inject", "(Ljava/lang/Thread;)V", false)
-            mv.visitInsn(RETURN)
-        }
-    }
-
     private fun needManipulate(fileName: String): Boolean {
         return (fileName.endsWith(SdkConstants.DOT_CLASS)
                 && !fileName.endsWith("R.class")
@@ -228,7 +150,7 @@ class ThreadInspectorTransform : Transform() {
     }
 
     private fun getClassVisitor(cw: ClassWriter): ClassVisitor {
-        return TestMethodClassAdapter(
+        return ThreadManipulateClassVisitor(
             cw
         )
     }
