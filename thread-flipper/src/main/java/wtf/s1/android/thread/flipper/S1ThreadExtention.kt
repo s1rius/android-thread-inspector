@@ -13,6 +13,7 @@ fun S1Thread.toFlipperObject(): FlipperObject {
         .put("priority", this.priority)
         .put("state", this.state)
         .put("daemon", "${this.isDaemon}")
+        .put("alive","${this.isAlive}")
         .build()
 
 }

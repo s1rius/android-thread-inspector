@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply from: rootProject.file('release.gradle')
 
 android {
     compileSdkVersion 29
@@ -46,7 +47,7 @@ dependencies {
     api 'me.weishu.exposed:exposed-xposedapi:0.4.5'
 }
 
-/* ignore publish
+/* ignore origin publish
 apply plugin: 'com.novoda.bintray-release'
 
 publish {

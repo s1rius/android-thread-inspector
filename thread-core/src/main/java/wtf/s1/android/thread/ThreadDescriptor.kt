@@ -14,8 +14,9 @@ data class S1Thread(val id: Long,
                     var state: String,
                     val priority: Int,
                     val isDaemon: Boolean,
-                    val isInterrupted: Boolean,
-                    val createTime: Long = System.currentTimeMillis()
+                    var isInterrupted: Boolean,
+                    var isAlive: Boolean,
+                    var createTime: Long = System.currentTimeMillis()
                      ) {
 
     constructor(thread: Thread): this(
@@ -25,7 +26,14 @@ data class S1Thread(val id: Long,
         thread.state.ordinal.threadState(),
         thread.priority,
         thread.isDaemon,
+        thread.isAlive,
         thread.isInterrupted)
+
+    fun update(thread: Thread) {
+        this.state = thread.state.ordinal.threadState()
+        this.isInterrupted = thread.isInterrupted
+        this.isAlive = thread.isAlive
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

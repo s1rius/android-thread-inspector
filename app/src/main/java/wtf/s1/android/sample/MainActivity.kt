@@ -1,6 +1,5 @@
 package wtf.s1.android.sample
 
-import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -9,52 +8,41 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import wtf.s1.aa.WtfThread
-import wtf.s1.android.thread.epic.ThreadHook
+import wtf.s1.android.thread.jar.ThreadFromJar
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        const val TAG = "thread-inspector"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (BuildConfig.DEBUG) {
-            Log.i("ooooo", "oonon")
-        }
-//
-        findViewById<View>(R.id.hook).setOnClickListener {
-            val t = object : Thread("unuse ") {
+        findViewById<View>(R.id.new_thread).setOnClickListener {
+            object: Thread("new thread"){
                 override fun run() {
                     super.run()
-                    print("onono $name")
+                    Log.i(TAG, "new thread run")
                 }
-            }
-            t.start()
+            }.start()
         }
 
-        /**
-        window.decorView.postDelayed({
-//            for (i in 1..100) {
-            val t = object : Thread("unuse ") {
-                override fun run() {
-                    super.run()
-                    print("onono $name")
-                }
+        findViewById<View>(R.id.new_thread_from_jar).setOnClickListener {
+            ThreadFromJar.run()
+        }
+
+        findViewById<View>(R.id.new_executor).setOnClickListener {
+            Executors.newCachedThreadPool().submit {
+                Log.i(TAG, "thread pool submit")
             }
-            t.start()
-//            }
-        }, 5000)
+        }
 
-         */
-
-//        window.decorView.postDelayed({
-//            WtfThread.anotherThread()
-//        }, 3000)
-//
-//        lifecycleScope.launch {
-//            async(Dispatchers.IO) {
-//                Log.i("ooooo", "coroutines io")
-//            }
-//        }
+        lifecycleScope.launch {
+            async(Dispatchers.IO) {
+                Log.i(TAG, "coroutine")
+            }
+        }
     }
 }
