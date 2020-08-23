@@ -19,11 +19,10 @@ object Plugins{
 }
 
 object Deps{
-
-    const val remoteThreadCore = "wtf.s1.pudge:thread-inspector-core:0.1.0"
-    const val remoteThreadFlipper = "wtf.s1.pudge:thread-inspector-flipper:0.1.0"
-    const val remoteThreadFlipperPlugin = "wtf.s1.pudge:thread-gradle-plugin:0.1.1"
-    const val localThreadFlipperPlugin = "wtf.s1.pudge:thread-gradle-plugin:0.1.0"
+    const val remoteEpicCopy = "wtf.s1.pudge:weishu-epic-copy:0.0.1"
+    const val remoteThreadEpic = "wtf.s1.pudge:thread-inspector-epic:0.0.1"
+    const val remoteThreadCore = "wtf.s1.pudge:thread-inspector-core:0.1.1"
+    const val remoteThreadFlipper = "wtf.s1.pudge:thread-inspector-flipper:0.1.1"
 
     object Kotlin {
         const val stdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"

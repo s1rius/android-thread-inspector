@@ -16,8 +16,6 @@ buildscript {
     dependencies {
         classpath ClassPaths.gradlePlugin
         classpath ClassPaths.kotlinPlugin
-        classpath Deps.remoteThreadFlipperPlugin
-        // classpath Deps.localThreadFlipperPlugin
         classpath ClassPaths.jfrogBintray
         classpath ClassPaths.dcendentsMavenPlugin
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
