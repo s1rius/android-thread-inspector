@@ -7,7 +7,9 @@
   "flipperBundlerEntry": "src/index.tsx",
   "license": "MIT",
   "keywords": [
-    "flipper-plugin"
+    "flipper-plugin",
+    "android",
+    "thread"
   ],
   "icon": "apps",
   "title": "s1-thread-inspector",
@@ -25,5 +27,8 @@
     "@types/react-dom": "latest",
     "flipper": "latest",
     "flipper-pkg": "latest"
+  },
+  "dependencies": {
+    "dateformat": "^3.0.3"
   }
 }

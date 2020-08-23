@@ -23,15 +23,17 @@ import {
  } from 'flipper';
 
  import {MenuTemplate} from 'flipper/src/ui/components/ContextMenu';
+ import dateFormat from 'dateformat';
 
 type S1Thread = {
-  readonly id: string;
-  readonly name: string;
-  readonly group: string;
-  readonly state: string;
-  readonly priority: number;
-  readonly daemon: string;
-  readonly createAt: number;
+  id: string;
+  name: string;
+  group: string;
+  state: string;
+  priority: number;
+  daemon: string;
+  alive: String;
+  createAt: number;
 };
 
 type Entries = ReadonlyArray<{
@@ -80,7 +82,7 @@ const COLUMNS = {
 
 const COLUMN_SIZE = {
   id: 100,
-  name: 120,
+  name: 240,
   group: 120,
   time: 'flex',
   state: 100,
@@ -192,14 +194,31 @@ export default class S1ThreadTable extends FlipperPlugin <
     if (method === 'refreshAll') {
       return Object.assign({}, persistedState, {
         threads: persistedState.threads.concat(payload.threads),
-        rows: persistedState.rows.concat(processThreads(payload.threads))
+        rows: persistedState.rows.concat(processThreads(payload.threads)).sort((a, b)=> a.createAt - b.createAt)
       });
     }
     if (method === 'newThread') {
       return Object.assign({}, persistedState, {
         threads: persistedState.threads.concat([payload.newThread]),
-        rows: persistedState.rows.concat(processThread(payload.newThread))
+        rows: persistedState.rows.concat(processThread(payload.newThread)).sort((a, b)=> a.createAt - b.createAt)
       });
+    }
+    if (method === 'updateThread') {
+      let updateThread = payload.newThread
+      persistedState.threads.forEach((item, index) => {
+          if (item.id === updateThread.id) {
+            item.state = updateThread.state
+          }
+      })
+      persistedState.rows.forEach((row, index, object) => {
+        if (row.key === updateThread.id) {
+          object.splice(index, 1)
+        }
+      })
+      return Object.assign({}, persistedState, {
+        threads: persistedState.threads,
+        rows: persistedState.rows.concat(processThread(updateThread)).sort((a, b)=> a.createAt - b.createAt)
+      })
     }
     return persistedState;
   }
@@ -264,7 +283,7 @@ function processThread(thread: S1Thread): TableBodyRow {
           },
           time: {
             value: (
-              <HiddenScrollText code={true}>{String(thread.createAt)}</HiddenScrollText>
+              <HiddenScrollText code={true}>{dateFormat(thread.createAt, 'HH:MM:ss.l')}</HiddenScrollText>
             ),
           },
           state: {
