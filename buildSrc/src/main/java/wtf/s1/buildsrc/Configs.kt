@@ -53,7 +53,7 @@ object Deps{
 
     const val soloader = "com.facebook.soloader:soloader:0.9.0"
 
-    const val epic = "me.weishu:epic:0.6.0"
+    const val epic = "me.weishu:epic:0.8.0-c"
 }
 
 object ClassPaths {
