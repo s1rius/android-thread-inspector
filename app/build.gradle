@@ -17,14 +17,14 @@ android {
 }
 
 dependencies {
-    implementation(Deps.remoteThreadCore)
-    implementation(Deps.remoteThreadFlipper)
-    implementation(Deps.remoteThreadEpic)
-    implementation(Deps.remoteEpicCopy)
+//    implementation(Deps.remoteThreadCore)
+//    implementation(Deps.remoteThreadFlipper)
+//    implementation(Deps.remoteThreadEpic)
+//    implementation(Deps.remoteEpicCopy)
 
-    // implementation(project(":thread-core"))
-    // implementation(project(":thread-flipper"))
-    // implementation(project(":thread-epic"))
+     implementation(project(":thread-core"))
+     implementation(project(":thread-flipper"))
+     implementation(project(":thread-epic"))
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation(Deps.Kotlin.ktxCore)

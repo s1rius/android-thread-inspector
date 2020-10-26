@@ -8,7 +8,7 @@ interface ThreadLog {
         private const val TAG = "ThreadLog"
     }
 
-    fun onThreadNew(t: Thread)
+    fun onThreadNew(t: Thread, stacktraceArray: Array<StackTraceElement>?)
 
     fun onThreadRun(t: Thread)
 

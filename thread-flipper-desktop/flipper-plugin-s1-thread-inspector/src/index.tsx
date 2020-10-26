@@ -1,14 +1,18 @@
-import React from 'react';
+
 import {
   FlipperBasePlugin, 
   FlipperPlugin, 
   FlipperDevicePlugin,
   View, 
   styled,
+  Toolbar,
   Text,
+  Textarea,
   Button,
   ContextMenu,
   FlexColumn,
+  DetailSidebar,
+  FlexRow,
   SearchableTable,
   ManagedTable,
   KeyboardActions,
@@ -19,8 +23,11 @@ import {
   BaseAction,
   BaseDevice,
   ManagedTableClass,
+  produce,
   Props as PluginProps
  } from 'flipper';
+
+ import React from 'react';
 
  import {MenuTemplate} from 'flipper/src/ui/components/ContextMenu';
  import dateFormat from 'dateformat';
@@ -32,14 +39,10 @@ type S1Thread = {
   state: string;
   priority: number;
   daemon: string;
-  alive: String;
+  alive: string;
   createAt: number;
+  stacktraces: Array<string>;
 };
-
-type Entries = ReadonlyArray<{
-  readonly row: TableBodyRow;
-  readonly entry: S1Thread;
-}>;
 
 type Message = {
   newThread: S1Thread;
@@ -47,8 +50,7 @@ type Message = {
 }
 
 type State = {
-  readonly rows: ReadonlyArray<TableBodyRow>;
-  readonly entries: Entries;
+  currentThread: S1Thread|undefined;
 };
 
 type PersistedState = {
@@ -56,6 +58,7 @@ type PersistedState = {
   threads: Array<S1Thread>;
 };
 
+// 表显示的列
 const COLUMNS = {
   id: {
     value: 'ID',
@@ -80,6 +83,7 @@ const COLUMNS = {
   }
 } as const;
 
+// 表格列的像素大小
 const COLUMN_SIZE = {
   id: 100,
   name: 240,
@@ -132,9 +136,43 @@ const HiddenScrollText = styled(Text)({
   },
 });
 
-export default class S1ThreadTable extends FlipperPlugin <
+const ScrollText = styled(Text)({
+  alignSelf: 'baseline',
+  userSelect: 'none',
+  lineHeight: '130%',
+  marginTop: 5,
+  height:'100%',
+  scrollable: true,
+  paddingBottom: 3,
+});
+
+const SpaceTextArea = styled(Textarea)({
+  width: '98%',
+  height: '100%',
+  marginLeft: '1%',
+  marginTop: '1%',
+  marginBottom: '1%',
+  readOnly: true,
+});
+
+const BoldSpan = styled.span({
+  fontSize: 12,
+  color: '#90949c',
+  fontWeight: 'bold',
+  textTransform: 'uppercase',
+});
+
+const itemStyle = {
+  margin: '10px', 
+  padding: '10px', 
+  whiteSpace: 'pre-line',
+  wordBreak: 'break-all',
+  width: '95%'
+};
+
+export default class S1ThreadTablePlugin extends FlipperPlugin <
   State,
-  BaseAction,
+  any,
   PersistedState
   > {
 
@@ -153,12 +191,20 @@ export default class S1ThreadTable extends FlipperPlugin <
   columns: TableColumns;
   columnSizes: TableColumnSizes;
   columnOrder: TableColumnOrder;
+
+  state: State = {
+    currentThread:undefined
+  };
   
-  constructor(props: PluginProps<PersistedState>) {
+  constructor(props: any) {
     super(props);
     this.columns = COLUMNS
     this.columnSizes = COLUMN_SIZE
     this.columnOrder = INITIAL_COLUMN_ORDER
+  }
+
+  init() {
+    const setState = this.setState.bind(this);
   }
 
   static ContextMenu = styled(ContextMenu)({
@@ -224,29 +270,64 @@ export default class S1ThreadTable extends FlipperPlugin <
   }
 
   render() {
-    const {persistedState} = this.props
+    const { persistedState } = this.props
 
     return (
-      <S1ThreadTable.ContextMenu
-        buildItems={this.buildContextMenuItems}
-        component={FlexColumn}>
-        <ManagedTable
-          innerRef={this.setTableRef}
-          floating={false}
-          multiline={true}
-          columnSizes={this.columnSizes}
-          columnOrder={this.columnOrder}
-          columns={this.columns}
-          rows={persistedState.rows}
-          multiHighlight={true}
-          zebra={false}
-          actions={<Button onClick={this.refreshAll}>Refresh All</Button>}
-          allowRegexSearch={true}
-        />
-      </S1ThreadTable.ContextMenu>
+      <FlexColumn style={{ flex: 1 }}>
+
+        <Toolbar position="top" style={{ height: 40, paddingLeft: 16, paddingTop: 16, paddingBottom: 16 }}>
+
+    <BoldSpan style={{ height: 30, marginRight: 16, marginTop: 16, marginBottom: 16 }}>Threads Count: {persistedState.rows.length}</BoldSpan>
+        </Toolbar>
+
+        <S1ThreadTablePlugin.ContextMenu
+          position="top"
+          buildItems={this.buildContextMenuItems}
+          component={FlexColumn}>
+          <ManagedTable
+            innerRef={this.setTableRef}
+            floating={false}
+            multiline={true}
+            columnSizes={this.columnSizes}
+            columnOrder={this.columnOrder}
+            columns={this.columns}
+            rows={persistedState.rows}
+            multiHighlight={false}
+            zebra={false}
+            actions={<Button onClick={this.refreshAll}>Refresh All</Button>}
+            allowRegexSearch={true}
+            onRowHighlighted={(selectedIds) => {
+              var nowThread
+              persistedState.threads.forEach((item, index) => {
+                if (item.id == selectedIds[0]) {
+                  console.log(item.id)
+                  nowThread = item
+                }
+              })
+              this.setState({
+                currentThread: nowThread
+              });
+            }}
+          />
+        </S1ThreadTablePlugin.ContextMenu>
+
+        <DetailSidebar>
+          {buildStacktraceLog(this.state.currentThread)}
+        </DetailSidebar>
+
+      </FlexColumn>
     );
   }
 
+}
+
+function buildStacktraceLog(t: S1Thread | undefined) {
+  var sb = '';
+  t?.stacktraces?.forEach((item, index) => {
+    console.log(item)
+    sb = sb.concat(item).concat('<br />')
+  })
+  return <div style={itemStyle} dangerouslySetInnerHTML={{ __html: sb }}></div>
 }
 
 function processThreads(threads: Array<S1Thread>): Array<TableBodyRow> {

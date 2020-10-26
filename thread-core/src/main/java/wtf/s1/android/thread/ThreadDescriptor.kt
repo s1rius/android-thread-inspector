@@ -16,7 +16,8 @@ data class S1Thread(val id: Long,
                     val isDaemon: Boolean,
                     var isInterrupted: Boolean,
                     var isAlive: Boolean,
-                    var createTime: Long = System.currentTimeMillis()
+                    var createTime: Long = System.currentTimeMillis(),
+                    var stackTraces: List<String?>? = null
                      ) {
 
     constructor(thread: Thread): this(

@@ -6,7 +6,6 @@ import com.facebook.flipper.core.FlipperPlugin
 import wtf.s1.android.thread.OnThreadCreateListener
 import wtf.s1.android.thread.S1Thread
 import wtf.s1.android.thread.ThreadInspector
-import wtf.s1.android.thread.ThreadLogImp
 
 class S1ThreadPlugin : FlipperPlugin,
     OnThreadCreateListener {
@@ -42,7 +41,9 @@ class S1ThreadPlugin : FlipperPlugin,
         connection = null
     }
 
-    override fun onThreadCreate(thread: S1Thread) {
+    override fun onThreadCreate(
+        thread: S1Thread
+    ) {
         newRow(thread)
     }
 
