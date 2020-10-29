@@ -86,7 +86,7 @@ const COLUMNS = {
 // 表格列的像素大小
 const COLUMN_SIZE = {
   id: 100,
-  name: 240,
+  name: 230,
   group: 120,
   time: 'flex',
   state: 100,
@@ -276,8 +276,7 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
       <FlexColumn style={{ flex: 1 }}>
 
         <Toolbar position="top" style={{ height: 40, paddingLeft: 16, paddingTop: 16, paddingBottom: 16 }}>
-
-    <BoldSpan style={{ height: 30, marginRight: 16, marginTop: 16, marginBottom: 16 }}>Threads Count: {persistedState.rows.length}</BoldSpan>
+          <BoldSpan style={{ height: 30, marginRight: 16, marginTop: 16, marginBottom: 16 }}>Threads Count: {persistedState.rows.length}</BoldSpan>
         </Toolbar>
 
         <S1ThreadTablePlugin.ContextMenu

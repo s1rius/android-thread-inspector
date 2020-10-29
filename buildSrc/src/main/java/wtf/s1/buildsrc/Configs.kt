@@ -20,9 +20,9 @@ object Plugins{
 
 object Deps{
     const val remoteEpicCopy = "wtf.s1.pudge:weishu-epic-copy:0.0.1"
-    const val remoteThreadEpic = "wtf.s1.pudge:thread-inspector-epic:0.1.1"
-    const val remoteThreadCore = "wtf.s1.pudge:thread-inspector-core:0.1.1"
-    const val remoteThreadFlipper = "wtf.s1.pudge:thread-inspector-flipper:0.1.1"
+    const val remoteThreadEpic = "wtf.s1.pudge:thread-inspector-epic:0.1.2"
+    const val remoteThreadCore = "wtf.s1.pudge:thread-inspector-core:0.1.2"
+    const val remoteThreadFlipper = "wtf.s1.pudge:thread-inspector-flipper:0.1.2"
 
     object Kotlin {
         const val stdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"
@@ -61,5 +61,4 @@ object ClassPaths {
     const val kotlinPlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
     const val jfrogBintray = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
     const val dcendentsMavenPlugin = "com.github.dcendents:android-maven-gradle-plugin:2.1"
-
 }
