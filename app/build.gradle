@@ -19,8 +19,8 @@ android {
 dependencies {
 
 
-    implementation(Deps.remoteThreadFlipper)
-//    implementation(project(":thread-flipper"))
+    debugImplementation(Deps.remoteThreadFlipper)
+//    debugImplementation(project(":thread-flipper"))
 
     debugImplementation(Deps.leakCanary)
     debugImplementation(Deps.flipper)
