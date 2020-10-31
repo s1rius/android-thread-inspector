@@ -20,7 +20,8 @@ android {
 
 dependencies {
     api(Deps.flipper)
-    api(project(":thread-core"))
-    api(project(":thread-epic"))
+
+    api(Deps.remoteThreadEpic)
+    //api(project(":thread-epic"))
 }
 

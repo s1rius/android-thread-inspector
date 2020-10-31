@@ -22,5 +22,7 @@ android {
 
 dependencies {
     api(Deps.epic)
-    api(project(":thread-core"))
+
+    api(Deps.remoteThreadCore)
+    //api(project(":thread-core"))
 }
