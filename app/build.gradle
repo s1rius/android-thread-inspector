@@ -20,19 +20,16 @@ dependencies {
 
 
     implementation(Deps.remoteThreadFlipper)
-    //implementation(project(":thread-flipper"))
+//    implementation(project(":thread-flipper"))
+
+    debugImplementation(Deps.leakCanary)
+    debugImplementation(Deps.flipper)
+    debugImplementation(Deps.soloader)
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation(Deps.Kotlin.ktxCore)
     implementation(Deps.Kotlin.coroutines)
     implementation(Deps.Kotlin.coroutinesAndroid)
-
-
-    debugImplementation(Deps.leakCanary)
-    debugImplementation(Deps.flipper)
-    debugImplementation(Deps.soloader)
-    releaseImplementation(Deps.flipperNoOp)
-
     implementation(Deps.Kotlin.ktxCore)
     implementation(Deps.AndroidX.appcompat)
     implementation(Deps.AndroidX.recyclerview)
