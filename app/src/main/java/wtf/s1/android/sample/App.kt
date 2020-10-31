@@ -26,9 +26,4 @@ class App: Application() {
             client.start()
         }
     }
-
-    override fun attachBaseContext(base: Context?) {
-        ThreadHook.hook()
-        super.attachBaseContext(base)
-    }
 }

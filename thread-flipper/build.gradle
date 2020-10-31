@@ -19,12 +19,8 @@ android {
 }
 
 dependencies {
-    api(project(":thread-core"))
-    api(Deps.AndroidX.Core.utils)
-    api(Deps.AndroidX.recyclerview)
-
     api(Deps.flipper)
-    api(Deps.soloader)
-
+    api(project(":thread-core"))
+    api(project(":thread-epic"))
 }
 

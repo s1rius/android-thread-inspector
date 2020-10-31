@@ -6,9 +6,9 @@ import com.facebook.flipper.core.FlipperPlugin
 import wtf.s1.android.thread.OnThreadCreateListener
 import wtf.s1.android.thread.S1Thread
 import wtf.s1.android.thread.ThreadInspector
+import wtf.s1.android.thread.epic.ThreadHook
 
-class S1ThreadPlugin : FlipperPlugin,
-    OnThreadCreateListener {
+class S1ThreadPlugin : FlipperPlugin, OnThreadCreateListener {
 
     companion object {
         const val TAG = "s1ThreadPlugin"
@@ -17,6 +17,7 @@ class S1ThreadPlugin : FlipperPlugin,
     }
 
     init {
+        ThreadHook.hook()
         ThreadInspector.getThreadLog()?.addOnThreadCreateListener(this)
     }
 

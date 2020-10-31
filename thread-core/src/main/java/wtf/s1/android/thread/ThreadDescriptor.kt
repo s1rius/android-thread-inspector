@@ -1,13 +1,9 @@
 package wtf.s1.android.thread
 
-import androidx.annotation.Keep
-
-@Keep
 data class S1ThreadGroup(val name: String) {
     constructor(threadGroup: ThreadGroup): this(threadGroup.name)
 }
 
-@Keep
 data class S1Thread(val id: Long,
                     val name: String,
                     val group: S1ThreadGroup,

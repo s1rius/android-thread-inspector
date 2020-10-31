@@ -1,10 +1,18 @@
 
+### build
+
+```javascript
+yarn install
+```
+
 ### debug
 
+```javascript
 1. build 并启动 Flipper， 进入Flipper/descktop
 2. yarn start
+```
 
-### how to publishing
+### publish
 
 ```javascript
 yarn publish

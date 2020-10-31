@@ -28,8 +28,6 @@ import {
  } from 'flipper';
 
  import React from 'react';
-
- import {MenuTemplate} from 'flipper/src/ui/components/ContextMenu';
  import dateFormat from 'dateformat';
 
 type S1Thread = {
@@ -210,16 +208,6 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
   static ContextMenu = styled(ContextMenu)({
     flex: 1,
   });
-
-  buildContextMenuItems: () => MenuTemplate = () => [
-    {
-      type: 'separator',
-    },
-    {
-      label: 'Clear all',
-      click: this.refreshAll,
-    },
-  ];
   
   setTableRef = (ref: ManagedTableClass) => {
     this.tableRef = ref;
@@ -240,7 +228,7 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
     if (method === 'refreshAll') {
       return Object.assign({}, persistedState, {
         threads: persistedState.threads.concat(payload.threads),
-        rows: persistedState.rows.concat(processThreads(payload.threads)).sort((a, b)=> a.createAt - b.createAt)
+        rows: persistedState.rows.slice(0, persistedState.rows.length).concat(processThreads(payload.threads)).sort((a, b)=> a.createAt - b.createAt)
       });
     }
     if (method === 'newThread') {
@@ -281,7 +269,6 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
 
         <S1ThreadTablePlugin.ContextMenu
           position="top"
-          buildItems={this.buildContextMenuItems}
           component={FlexColumn}>
           <ManagedTable
             innerRef={this.setTableRef}
@@ -299,7 +286,6 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
               var nowThread
               persistedState.threads.forEach((item, index) => {
                 if (item.id == selectedIds[0]) {
-                  console.log(item.id)
                   nowThread = item
                 }
               })
@@ -310,7 +296,8 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
           />
         </S1ThreadTablePlugin.ContextMenu>
 
-        <DetailSidebar>
+        <DetailSidebar
+          minWidth={300}>
           {buildStacktraceLog(this.state.currentThread)}
         </DetailSidebar>
 
@@ -323,7 +310,6 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
 function buildStacktraceLog(t: S1Thread | undefined) {
   var sb = '';
   t?.stacktraces?.forEach((item, index) => {
-    console.log(item)
     sb = sb.concat(item).concat('<br />')
   })
   return <div style={itemStyle} dangerouslySetInnerHTML={{ __html: sb }}></div>
