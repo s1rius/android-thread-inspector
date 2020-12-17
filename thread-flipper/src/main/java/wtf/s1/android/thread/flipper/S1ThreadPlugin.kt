@@ -6,7 +6,7 @@ import com.facebook.flipper.core.FlipperPlugin
 import wtf.s1.android.thread.OnThreadCreateListener
 import wtf.s1.android.thread.S1Thread
 import wtf.s1.android.thread.ThreadInspector
-import wtf.s1.android.thread.epic.ThreadHook
+import java.lang.Exception
 
 class S1ThreadPlugin : FlipperPlugin, OnThreadCreateListener {
 
@@ -14,10 +14,20 @@ class S1ThreadPlugin : FlipperPlugin, OnThreadCreateListener {
         const val TAG = "s1ThreadPlugin"
         const val NEW_THREAD = "newThread"
         const val UPDATE_THREAD = "updateThread"
+        private const val EPIC_THREAD_HOOK_CLASS_NAME = "wtf.s1.android.thread.epic.ThreadHook"
+
+        init {
+            try {
+                val clazz = Class.forName(EPIC_THREAD_HOOK_CLASS_NAME)
+                val hookMethod = clazz.getDeclaredMethod("hook")
+                hookMethod.invoke(null)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     init {
-        ThreadHook.hook()
         ThreadInspector.getThreadLog()?.addOnThreadCreateListener(this)
     }
 
