@@ -1,4 +1,3 @@
-include ':lib-epic'
 rootProject.name="android-thread-inspector"
 include ":app"
 //include ":thread-plugin"

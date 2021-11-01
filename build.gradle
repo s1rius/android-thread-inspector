@@ -9,6 +9,7 @@ buildscript {
         google()
         jcenter()
         // mavenLocal()
+        maven { url 'https://jitpack.io' }
         maven { url "https://dl.bintray.com/s1rius/pudge" }
 
     }
@@ -25,6 +26,7 @@ buildscript {
 allprojects {
     repositories {
         google()
+        maven { url 'https://jitpack.io' }
         jcenter()
         mavenLocal()
     }

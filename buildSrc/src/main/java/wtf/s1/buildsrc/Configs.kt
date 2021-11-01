@@ -5,10 +5,10 @@ object Versions{
     const val kotlin = "1.3.71"
     const val ktx = "1.0.0"
     const val coroutines = "1.3.2"
-    const val gradlePlugin ="3.5.1"
+    const val gradlePlugin ="4.1.3"
     const val lifecycle = "2.2.0"
-    const val compileSdkVersion = 28
-    const val minSdkVersion = 15
+    const val compileSdkVersion = 29
+    const val minSdkVersion = 21
     const val targetSdkVersion = 28
     const val versionCode = 1
     const val versionName = "1.0.0"
@@ -53,7 +53,7 @@ object Deps{
 
     const val soloader = "com.facebook.soloader:soloader:0.9.0"
 
-    const val epic = "me.weishu:epic:0.8.0-c"
+    const val epic = "com.github.tiann:epic:0.11.2"
 }
 
 object ClassPaths {

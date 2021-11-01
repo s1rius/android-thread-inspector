@@ -3,7 +3,6 @@ apply from: rootProject.file('release.gradle')
 
 android {
     compileSdkVersion 29
-    buildToolsVersion '28.0.3'
 
     defaultConfig {
         minSdkVersion 14
@@ -16,7 +15,7 @@ android {
         ndk {
             // Specifies the ABI configurations of your native
             // libraries Gradle should build and package with your APK.
-            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+            .abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
         }
         externalNativeBuild {
             cmake {
