@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         findViewById<View>(R.id.new_thread).setOnClickListener {
-            object: Thread("new thread"){
+            object: Thread("new thread from click on button"){
                 override fun run() {
                     super.run()
                     Log.i(TAG, "new thread run")
@@ -37,6 +37,10 @@ class MainActivity : AppCompatActivity() {
             Executors.newCachedThreadPool().submit {
                 Log.i(TAG, "thread pool submit")
             }
+        }
+
+        findViewById<View>(R.id.new_native).setOnClickListener {
+            NativeHookee.nCreate()
         }
 
         lifecycleScope.launch {

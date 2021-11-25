@@ -6,8 +6,10 @@ import com.facebook.flipper.android.AndroidFlipperClient
 import com.facebook.flipper.android.utils.FlipperUtils
 import com.facebook.soloader.SoLoader
 import wtf.s1.android.thread.flipper.S1ThreadPlugin
+import wtf.s1.android.sample.App
+import wtf.s1.android.thread.bhook.S1ThreadHooker
 
-class DebugApp: Application() {
+class DebugApp: App() {
 
     override fun onCreate() {
         super.onCreate()

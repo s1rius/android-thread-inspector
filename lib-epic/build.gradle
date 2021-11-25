@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply from: rootProject.file('release.gradle')
 
 android {
     compileSdkVersion 29

@@ -1,0 +1,55 @@
+import wtf.s1.buildsrc.Deps
+import wtf.s1.buildsrc.Versions
+
+apply plugin: "com.android.library"
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion(Versions.compileSdkVersion)
+
+    buildFeatures {
+        prefab true
+    }
+
+    defaultConfig {
+        minSdkVersion(Versions.minSdkVersion)
+        targetSdkVersion(Versions.targetSdkVersion)
+        versionName = VERSION_NAME
+
+        ndk {
+            abiFilters rootProject.ext.abiFilters.split(",")
+        }
+
+        externalNativeBuild {
+            cmake {
+                abiFilters rootProject.ext.abiFilters.split(",")
+                arguments '-DANDROID_STL=c++_shared'
+                cppFlags "-std=c++17", "-Wl,--gc-sections", "-fexceptions", "-fno-rtti", "-fvisibility=hidden", "-flto"
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version rootProject.ext.cmakeVersion
+//            arguments '-DANDROID_STL=c++_shared'
+//            cppFlags "-std=c++17", "-Wl,--gc-sections", "-fexceptions", "-fno-rtti", "-fvisibility=hidden", "-flto"
+        }
+    }
+
+    packagingOptions {
+        pickFirst '**/libbytehook.so'
+    }
+
+    lintOptions {
+        // isAbortOnError false
+    }
+}
+
+dependencies {
+    api(Deps.bhook)
+    api(Deps.AndroidX.annotationx)
+    api(project(":thread-core"))
+}

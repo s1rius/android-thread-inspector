@@ -9,45 +9,21 @@ class ThreadLogImp: ThreadLog {
     private val threadMap = ConcurrentHashMap<Long, S1Thread>()
     private val listeners = CopyOnWriteArrayList<OnThreadCreateListener>()
 
-    override fun onThreadNew(
-        t: Thread,
-        stacktraceArray: Array<StackTraceElement>?
-    ) {
-        val newThread = S1Thread(t).apply {
-            val sb = StringBuilder()
-            val array = arrayListOf<String>()
-            stacktraceArray?.forEach {
-                val item = StringBuilder()
-                item.append("Thread new: at ")
-                    .append(it.className).append(".")
-                    .append(it.methodName)
-                    .append("(")
-                    .append(it.className.substring(
-                        it.className.lastIndexOf(".") + 1))
-                    .append(":").append(it.lineNumber)
-                    .append(")")
+    override fun getThread(tid: Long): S1Thread? {
+        return threadMap.get(tid)
+    }
 
-                array.add(item.toString())
-                sb.append(item)
-            }
-
-            this.stackTraces = array
-        }
-        threadMap[newThread.id] = newThread
+    override fun onThreadNew(t: S1Thread) {
+        threadMap[t.id] = t
         listeners.forEach {
-            it.onThreadCreate(newThread)
+            it.onThreadCreate(t)
         }
     }
 
-    override fun onThreadRun(t: Thread) {
-
-        var newThread = threadMap[t.id]
-        if (newThread == null) {
-            newThread = S1Thread(t)
-        }
-        threadMap[t.id] = newThread
+    override fun onThreadUpdate(t: S1Thread) {
+        threadMap[t.id] = t
         listeners.forEach {
-            it.onThreadRun(newThread)
+            it.onThreadRun(t)
         }
     }
 
@@ -70,5 +46,4 @@ class ThreadLogImp: ThreadLog {
         }
         return threadMap.values
     }
-
 }

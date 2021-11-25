@@ -6,6 +6,7 @@ buildscript {
         kotlin_version = '1.3.72'
     }
     repositories {
+        mavenCentral()
         google()
         jcenter()
         // mavenLocal()
@@ -23,8 +24,21 @@ buildscript {
     }
 }
 
+ext {
+    minSdkVersion = 16
+    compileSdkVersion = 31
+    targetSdkVersion = 31
+    buildToolsVersion = "31.0.0"
+    javaVersion = JavaVersion.VERSION_1_8
+    ndkVersion = "23.0.7599858"
+    cmakeVersion = "3.18.1"
+    abiFilters = "armeabi-v7a,arm64-v8a,x86,x86_64"
+    dependencyOnLocalLibrary = false
+}
+
 allprojects {
     repositories {
+        mavenCentral()
         google()
         maven { url 'https://jitpack.io' }
         jcenter()

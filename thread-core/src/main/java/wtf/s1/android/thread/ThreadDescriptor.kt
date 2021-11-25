@@ -1,30 +1,45 @@
 package wtf.s1.android.thread
 
-data class S1ThreadGroup(val name: String) {
-    constructor(threadGroup: ThreadGroup): this(threadGroup.name)
-}
+data class S1Thread constructor(
+    var id: Long,
+    var cid: Long,
+    var name: String? = null,
+    var group: String? = null,
+    var state: String? = null,
+    val priority: Int? = null,
+    val isDaemon: Boolean? = null,
+    var isInterrupted: Boolean? = null,
+    var isAlive: Boolean? = null,
+    var createTime: Long = System.currentTimeMillis(),
+    var stackTraces: List<String>? = null
+) {
 
-data class S1Thread(val id: Long,
-                    val name: String,
-                    val group: S1ThreadGroup,
-                    var state: String,
-                    val priority: Int,
-                    val isDaemon: Boolean,
-                    var isInterrupted: Boolean,
-                    var isAlive: Boolean,
-                    var createTime: Long = System.currentTimeMillis(),
-                    var stackTraces: List<String?>? = null
-                     ) {
+    constructor(cid: Long, tid: Long, name: String? = null) : this(
+        tid,
+        cid,
+        name,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        System.currentTimeMillis(),
+        null
+    )
 
-    constructor(thread: Thread): this(
+    constructor(thread: Thread) : this(
+        thread.id,
         thread.id,
         thread.name,
-        S1ThreadGroup(thread.threadGroup),
+        thread.threadGroup.name,
         thread.state.ordinal.threadState(),
         thread.priority,
         thread.isDaemon,
         thread.isAlive,
-        thread.isInterrupted)
+        thread.isInterrupted
+    )
+
 
     fun update(thread: Thread) {
         this.state = thread.state.ordinal.threadState()
@@ -65,7 +80,7 @@ fun Int.threadState(): String {
         Thread.State.RUNNABLE.ordinal -> "runnable"
         Thread.State.TERMINATED.ordinal -> "terminated"
         Thread.State.WAITING.ordinal -> "waiting"
-        Thread.State.TIMED_WAITING.ordinal-> "timed-waiting"
+        Thread.State.TIMED_WAITING.ordinal -> "timed-waiting"
         else -> "unknown"
     }
 }

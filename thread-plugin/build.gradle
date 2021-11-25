@@ -3,7 +3,6 @@ import wtf.s1.buildsrc.*
 apply plugin: 'java'
 apply plugin: "groovy"
 apply plugin: 'kotlin'
-apply from: rootProject.file('release.gradle')
 
 version = VERSION_NAME
 group = GROUP
@@ -18,7 +17,7 @@ dependencies {
     implementation(Deps.Kotlin.stdLib)
     implementation(gradleApi())
     implementation(localGroovy())
-    implementation("com.android.tools.build:gradle:3.6.3")
+    implementation(ClassPaths.gradlePlugin)
     implementation("com.android.tools.build:gradle-api:3.6.3")
     implementation("org.ow2.asm:asm:8.0.1")
     implementation("org.ow2.asm:asm-util:8.0.1")

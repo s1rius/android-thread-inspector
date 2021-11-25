@@ -103,7 +103,7 @@ const INITIAL_COLUMN_ORDER = [
   },
   {
     key: 'group',
-    visible: true,
+    visible: false,
   },
   {
     key: 'time',
@@ -115,11 +115,11 @@ const INITIAL_COLUMN_ORDER = [
   },
   {
     key: 'priority',
-    visible: true,
+    visible: false,
   },
   {
     key: 'daemon',
-    visible: true,
+    visible: false,
   },
 ];
 
@@ -228,33 +228,35 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
     if (method === 'refreshAll') {
       return Object.assign({}, persistedState, {
         threads: persistedState.threads.concat(payload.threads),
-        rows: persistedState.rows.slice(0, persistedState.rows.length).concat(processThreads(payload.threads)).sort((a, b)=> a.createAt - b.createAt)
+        rows: persistedState.rows.slice(0, persistedState.rows.length).concat(processThreads(payload.threads))
       });
     }
     if (method === 'newThread') {
       return Object.assign({}, persistedState, {
-        threads: persistedState.threads.concat([payload.newThread]),
-        rows: persistedState.rows.concat(processThread(payload.newThread)).sort((a, b)=> a.createAt - b.createAt)
+        threads: persistedState.threads.concat(payload.newThread),
+        rows: persistedState.rows.concat(processThread(payload.newThread))
       });
     }
     if (method === 'updateThread') {
       let updateThread = payload.newThread
+      let curThreads = Array.from(persistedState.threads)
+      let curRows = Array.from(persistedState.rows)
       persistedState.threads.forEach((item, index) => {
-          if (item.id === updateThread.id) {
-            item.state = updateThread.state
+          if (item.id == updateThread.id) {
+            console.log("update")
+            curThreads.splice(index, 1)
+            curThreads.unshift(updateThread)
+            curThreads.sort((a, b)=> b.createAt - a.createAt)
+            curRows.splice(index, 1)
+            curRows.unshift(processThread(updateThread))
           }
       })
-      persistedState.rows.forEach((row, index, object) => {
-        if (row.key === updateThread.id) {
-          object.splice(index, 1)
-        }
-      })
       return Object.assign({}, persistedState, {
-        threads: persistedState.threads,
-        rows: persistedState.rows.concat(processThread(updateThread)).sort((a, b)=> a.createAt - b.createAt)
+        threads: curThreads,
+        rows: curRows
       })
     }
-    return persistedState;
+    //return persistedState;
   }
 
   render() {
@@ -263,7 +265,7 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
     return (
       <FlexColumn style={{ flex: 1 }}>
 
-        <Toolbar position="top" style={{ height: 40, paddingLeft: 16, paddingTop: 16, paddingBottom: 16 }}>
+        <Toolbar position="top" style={{ height: 40, paddingLeft: 16, paddingTop: 0, paddingBottom: 0 }}>
           <BoldSpan style={{ height: 30, marginRight: 16, marginTop: 16, marginBottom: 16 }}>Threads Count: {persistedState.rows.length}</BoldSpan>
         </Toolbar>
 
@@ -297,7 +299,8 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
         </S1ThreadTablePlugin.ContextMenu>
 
         <DetailSidebar
-          minWidth={300}>
+          minWidth={300}
+          minHeight={300}>
           {buildStacktraceLog(this.state.currentThread)}
         </DetailSidebar>
 

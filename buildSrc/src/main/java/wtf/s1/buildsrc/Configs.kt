@@ -40,7 +40,7 @@ object Deps{
         const val extension = "androidx.lifecycle:lifecycle-extensions:${Versions.lifecycle}"
         const val livedata = "androidx.lifecycle:lifecycle-livedata:${Versions.lifecycle}"
         const val lifecycleRuntime = "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.lifecycle}"
-
+        const val annotationx = "androidx.annotation:annotation:1.3.0"
         object Core {
             const val utils = "androidx.legacy:legacy-support-core-utils:1.0.0"
         }
@@ -48,12 +48,13 @@ object Deps{
 
     const val leakCanary = "com.squareup.leakcanary:leakcanary-android:2.0"
 
-    const val flipper = "com.facebook.flipper:flipper:0.43.0"
-    const val flipperNoOp = "com.facebook.flipper:flipper-noop:0.43.0"
+    const val flipper = "com.facebook.flipper:flipper:0.123.0"
+    const val flipperNoOp = "com.facebook.flipper:flipper-noop:0.123.0"
 
     const val soloader = "com.facebook.soloader:soloader:0.9.0"
 
     const val epic = "com.github.tiann:epic:0.11.2"
+    const val bhook = "com.bytedance:bytehook:1.0.3"
 }
 
 object ClassPaths {

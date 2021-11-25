@@ -4,12 +4,20 @@ object ThreadInspector {
 
     var log: ThreadLog? = ThreadLogImp()
 
-    fun threadNew(thread: Thread, stackTraceElements: Array<StackTraceElement>?) {
-        log?.onThreadNew(thread, stackTraceElements)
+    fun threadCreate(thread: S1Thread) {
+        log?.onThreadNew(thread)
     }
 
-    fun threadRun(thread: Thread) {
-        log?.onThreadRun(thread)
+    fun threadUpdate(thread: S1Thread) {
+        log?.onThreadUpdate(thread)
+    }
+
+    fun getThread(tid: Long): S1Thread? {
+        return log?.getThread(tid)
+    }
+
+    fun getThread(tid: Int): S1Thread? {
+        return log?.getThread(tid.toLong())
     }
 
     fun getAllThread(): Collection<S1Thread>? {

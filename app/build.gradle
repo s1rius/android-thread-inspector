@@ -13,20 +13,50 @@ android {
         targetSdkVersion(Versions.targetSdkVersion)
         versionCode = Versions.versionCode
         versionName = Versions.versionName
+
+        ndk {
+            abiFilters rootProject.ext.abiFilters.split(",")
+        }
+
+        externalNativeBuild {
+            cmake {
+                abiFilters rootProject.ext.abiFilters.split(",")
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version rootProject.ext.cmakeVersion
+        }
+    }
+
+    packagingOptions {
+        pickFirst '**/libjsc.so'
+        pickFirst '**/libc++_shared.so'
+        pickFirst '**/libbytehook.so'
+    }
+
+    buildFeatures {
+        prefab true
     }
 }
 
 dependencies {
 
 
-    // debugImplementation(Deps.remoteThreadFlipper)
-    // debugImplementation(Deps.remoteThreadEpic)
+//     debugImplementation(Deps.remoteThreadFlipper)
+//     debugImplementation(Deps.remoteThreadEpic)
     debugImplementation(project(":thread-flipper"))
-    debugImplementation(project(":thread-epic"))
+    debugImplementation(project(":thread-bhook"))
+//    debugImplementation(project(":thread-epic"))
 
-    debugImplementation(Deps.leakCanary)
+    // debugImplementation(Deps.leakCanary)
     debugImplementation(Deps.flipper)
     debugImplementation(Deps.soloader)
+
+
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation(Deps.Kotlin.ktxCore)
@@ -38,4 +68,5 @@ dependencies {
     implementation(Deps.AndroidX.extension)
     implementation(Deps.AndroidX.livedata)
     implementation(Deps.AndroidX.lifecycleRuntime)
+    implementation(Deps.bhook)
 }
