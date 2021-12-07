@@ -1,7 +1,5 @@
 rootProject.name="android-thread-inspector"
 include ":app"
-// include ":thread-plugin"
 include ":thread-core"
 include ":thread-flipper"
-// include ':thread-epic'
 include ':thread-bhook'
