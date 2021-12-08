@@ -4,5 +4,5 @@ interface OnThreadCreateListener {
 
     fun onThreadCreate(thread: S1Thread)
 
-    fun onThreadRun(thread: S1Thread)
+    fun onThreadUpdate(thread: S1Thread)
 }

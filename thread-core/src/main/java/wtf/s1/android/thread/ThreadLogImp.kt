@@ -1,6 +1,5 @@
 package wtf.s1.android.thread
 
-import java.lang.StringBuilder
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -23,7 +22,7 @@ class ThreadLogImp: ThreadLog {
     override fun onThreadUpdate(t: S1Thread) {
         threadMap[t.id] = t
         listeners.forEach {
-            it.onThreadRun(t)
+            it.onThreadUpdate(t)
         }
     }
 

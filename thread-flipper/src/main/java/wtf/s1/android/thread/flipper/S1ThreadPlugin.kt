@@ -14,17 +14,6 @@ class S1ThreadPlugin : FlipperPlugin, OnThreadCreateListener {
         const val TAG = "s1ThreadPlugin"
         const val NEW_THREAD = "newThread"
         const val UPDATE_THREAD = "updateThread"
-        private const val EPIC_THREAD_HOOK_CLASS_NAME = "wtf.s1.android.thread.epic.ThreadHook"
-
-        init {
-            try {
-                val clazz = Class.forName(EPIC_THREAD_HOOK_CLASS_NAME)
-                val hookMethod = clazz.getDeclaredMethod("hook")
-                hookMethod.invoke(null)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
     }
 
     init {
@@ -34,7 +23,6 @@ class S1ThreadPlugin : FlipperPlugin, OnThreadCreateListener {
     private var connection: FlipperConnection? = null
 
     override fun onConnect(connection: FlipperConnection?) {
-        Log.i(TAG, "onConnect")
         this.connection = connection
         ThreadInspector.getAllThread()?.forEach {
             newRow(it)
@@ -48,7 +36,6 @@ class S1ThreadPlugin : FlipperPlugin, OnThreadCreateListener {
 
 
     override fun onDisconnect() {
-        Log.i(TAG, "onDisconnect")
         connection = null
     }
 
@@ -58,21 +45,18 @@ class S1ThreadPlugin : FlipperPlugin, OnThreadCreateListener {
         newRow(thread)
     }
 
-    override fun onThreadRun(thread: S1Thread) {
-        Log.i(TAG, "thread run $thread")
+    override fun onThreadUpdate(thread: S1Thread) {
         updateRow(thread)
     }
 
     fun newRow(thread: S1Thread) {
         connection?.let {
-            Log.i(TAG, "send message")
             it.send(NEW_THREAD, FlipperMessage(thread).toFlipperObject())
         }
     }
 
     fun updateRow(thread: S1Thread) {
         connection?.let {
-            Log.i(TAG, "update message")
             it.send(UPDATE_THREAD, FlipperMessage(thread).toFlipperObject())
         }
     }

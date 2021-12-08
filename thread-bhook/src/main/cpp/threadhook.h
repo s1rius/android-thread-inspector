@@ -7,7 +7,6 @@
 struct thread_holder{
     void *(*start_routine)(void *);
     void *start_routine_arg;
-    char *stack_trace;
     size_t count;
     thread_holder(){}
     thread_holder(size_t c): count(c) {}

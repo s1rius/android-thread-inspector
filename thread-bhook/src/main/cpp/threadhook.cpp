@@ -77,21 +77,11 @@ inline static char *thread_create_post(thread_holder *threadHolder, void *lr) {
     if (nullptr == env) {
         monitor->t_create(new ThreadCallCreate(threadHolder->count, dli));
     } else {
-
-        char stack_trace[10000];
         auto jdli = (jstring) env->NewStringUTF(dli);
-        auto java_stack_trace = (jstring) (env->CallStaticObjectMethod(hook_clazz,
-                                                                       log_thread_create,
-                                                                       (int) threadHolder->count,
-                                                                       jdli));
-
-        if (java_stack_trace) {
-            const char *java_stack_to_c = env->GetStringUTFChars(java_stack_trace, (jboolean *) 0);
-
-            result = strcat(stack_trace, java_stack_to_c);
-            env->ReleaseStringUTFChars(java_stack_trace, java_stack_to_c);
-        }
-
+        (env->CallStaticObjectMethod(hook_clazz,
+                                     log_thread_create,
+                                     (int) threadHolder->count,
+                                     jdli));
     }
 
     delete dli;
@@ -103,7 +93,6 @@ static void *start_routine_delegate(thread_holder *arg) {
     auto tid = (int) syscall(SYS_gettid);
     char s[16] = "";
     prctl(PR_GET_NAME, (unsigned long) s, 0, 0, 0);
-    LOG("routine p name %s tid %d, c %d", s, tid, (int) arg->count);
 
     JNIEnv *env = getEnv();
     if (nullptr != env) {
@@ -119,7 +108,7 @@ static void *start_routine_delegate(thread_holder *arg) {
     }
     arg->start_routine = nullptr;
     arg->start_routine_arg = nullptr;
-    free(arg);
+    delete arg;
     return result;
 }
 
@@ -134,7 +123,7 @@ static int pthread_create_auto(pthread_t *pthread_ptr, pthread_attr_t const *att
     int result = BYTEHOOK_CALL_PREV(pthread_create_auto, pthread_ptr, attr,
                                     reinterpret_cast<void *(*)(void *)>(start_routine_delegate),
                                     holder);
-    holder->stack_trace = thread_create_post(holder, BYTEHOOK_RETURN_ADDRESS());
+    thread_create_post(holder, BYTEHOOK_RETURN_ADDRESS());
     return result;
 }
 
@@ -159,7 +148,6 @@ static void pthread_setname_np_auto(pthread_t pthread, const char *name) {
         monitor->t_set_name(new ThreadCallSetName(tid, name_copy));
         delete name_copy;
     }
-    LOG("jni setName name %s tid %d", name, tid);
 }
 
 static bool allow_filter(const char *caller_path_name, void *arg) {
@@ -167,9 +155,11 @@ static bool allow_filter(const char *caller_path_name, void *arg) {
 
     if (nullptr != strstr(caller_path_name, "libc.so")) return false;
     if (nullptr != strstr(caller_path_name, "libbase.so")) return false;
-    //if (nullptr != strstr(caller_path_name, "liblog.so")) return false;
+    if (nullptr != strstr(caller_path_name, "libGLES_mali.so")) return false;
     if (nullptr != strstr(caller_path_name, "libunwindstack.so")) return false;
     if (nullptr != strstr(caller_path_name, "libutils.so")) return false;
+    if (nullptr != strstr(caller_path_name, "libEGL.so")) return false;
+    if (nullptr != strstr(caller_path_name, "libhwui.so")) return false;
     // ......
 
     return true;
@@ -177,10 +167,7 @@ static bool allow_filter(const char *caller_path_name, void *arg) {
 
 static bool name_allow_filter(const char *caller_path_name, void *arg) {
     (void) arg;
-
     if (nullptr != strstr(caller_path_name, "libc.so")) return false;
-    if (nullptr != strstr(caller_path_name, "libart.so")) return true;
-
     return true;
 }
 
@@ -221,7 +208,7 @@ static int hacker_thread_create_on(JNIEnv *env, jobject thiz, jint type) {
                                                     pthread_create_proxy,
                                                     nullptr,
                                                     nullptr);
-        pthread_setname_np_stub = bytehook_hook_partial(allow_filter_for_hook_all,
+        pthread_setname_np_stub = bytehook_hook_partial(name_allow_filter,
                                                         nullptr,
                                                         nullptr,
                                                         "pthread_setname_np",
@@ -310,7 +297,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
 
     jclass cls;
     if (nullptr == (cls = env->FindClass(HACKER_JNI_CLASS_NAME))) return JNI_ERR;
-    hook_clazz = (jclass)env->NewGlobalRef(cls);
+    hook_clazz = (jclass) env->NewGlobalRef(cls);
 
     jmethodID mid;
     if (nullptr == (mid = env->GetStaticMethodID(
