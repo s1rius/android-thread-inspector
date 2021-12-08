@@ -3,7 +3,6 @@ package wtf.s1.android.thread.bhook
 import android.annotation.SuppressLint
 import android.text.TextUtils
 import android.util.Log
-import com.bytedance.android.bytehook.ByteHook
 
 import androidx.annotation.Keep
 import wtf.s1.android.thread.S1Thread
@@ -13,17 +12,14 @@ import java.util.concurrent.ConcurrentHashMap
 @Keep
 object S1ThreadHooker {
 
+    const val HOOK_ALL = 0
+    const val HOOK_APP = 1
+
     val stackCache = ConcurrentHashMap<Int, String>()
     val idMap = ConcurrentHashMap<Int, Int>()
     val nameMap = ConcurrentHashMap<Int, String>()
 
     init {
-        ByteHook.init(
-            ByteHook.ConfigBuilder()
-                .setMode(ByteHook.Mode.AUTOMATIC)
-                .setDebug(BuildConfig.DEBUG)
-                .build()
-        )
         System.loadLibrary("s1threadhook")
     }
 
@@ -48,9 +44,6 @@ object S1ThreadHooker {
                     updateThread(cid, tid)
                 }
             }
-            Log.i("thread_hook_java", "s1 create post cid=" + cid + "\n" + sb.toString())
-        } else {
-            Log.i("thread_hook_java", "s1 create pre cid=" + cid)
         }
         return sb.toString()
     }
@@ -59,7 +52,6 @@ object S1ThreadHooker {
     fun threadStart(tid: Int, cid: Int) {
         idMap[cid] = tid;
         updateThread(cid, tid)
-        Log.i("thread_hook_java", "t_start tid " + tid + " cid =" + cid)
     }
 
     private fun updateThread(cid: Int, tid: Int) {
@@ -103,7 +95,6 @@ object S1ThreadHooker {
 
     @JvmStatic
     fun threadSetName(tid: Int, name: String) {
-        Log.i("thread_hook_java", "t_set_name tid " + tid + " name=" + name)
         val s1Thread = ThreadInspector.getThread(tid)
         if (s1Thread == null) {
             nameMap[tid] = name
@@ -127,7 +118,7 @@ object S1ThreadHooker {
     external fun nativeUnhookThread(): Int
 
     @JvmStatic
-    fun hookThread(type: Int) {
+    fun hookThread(type: Int = HOOK_ALL) {
         nativeHookThread(type)
     }
 
