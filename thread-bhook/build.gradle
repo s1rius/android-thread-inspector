@@ -4,6 +4,8 @@ import wtf.s1.buildsrc.Versions
 apply plugin: "com.android.library"
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: "org.jetbrains.dokka"
+apply plugin: "com.vanniktech.maven.publish"
 
 android {
     compileSdkVersion(Versions.compileSdkVersion)
@@ -34,8 +36,6 @@ android {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
             version rootProject.ext.cmakeVersion
-//            arguments '-DANDROID_STL=c++_shared'
-//            cppFlags "-std=c++17", "-Wl,--gc-sections", "-fexceptions", "-fno-rtti", "-fvisibility=hidden", "-flto"
         }
     }
 

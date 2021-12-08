@@ -2,8 +2,9 @@
   "$schema": "https://fbflipper.com/schemas/plugin-package/v2.json",
   "name": "flipper-plugin-s1-thread-inspector",
   "id": "s1-thread-inspector",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "main": "dist/bundle.js",
+  "description": "an android thread create inspector plugin",
   "flipperBundlerEntry": "src/index.tsx",
   "license": "MIT",
   "keywords": [

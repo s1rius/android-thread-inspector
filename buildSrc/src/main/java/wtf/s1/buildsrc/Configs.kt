@@ -2,14 +2,14 @@ package wtf.s1.buildsrc
 
 object Versions{
     const val applicationId = "wtf.s1.aaa"
-    const val kotlin = "1.3.71"
+    const val kotlin = "1.5.10"
     const val ktx = "1.0.0"
-    const val coroutines = "1.3.2"
-    const val gradlePlugin ="4.1.3"
+    const val coroutines = "1.5.0"
+    const val gradlePlugin ="7.0.0"
     const val lifecycle = "2.2.0"
-    const val compileSdkVersion = 29
-    const val minSdkVersion = 21
-    const val targetSdkVersion = 28
+    const val compileSdkVersion = 31
+    const val minSdkVersion = 16
+    const val targetSdkVersion = 31
     const val versionCode = 1
     const val versionName = "1.0.0"
 }
@@ -19,8 +19,9 @@ object Plugins{
 }
 
 object Deps{
-    const val remoteThreadCore = "wtf.s1.pudge:thread-inspector-core:0.2.0"
-    const val remoteThreadFlipper = "wtf.s1.pudge:thread-inspector-flipper:0.2.0"
+    const val remoteThreadCore = "wtf.s1.pudge:thread-inspector-core:1.1.0"
+    const val remoteThreadFlipper = "wtf.s1.pudge:thread-inspector-flipper:1.1.0"
+    const val remoteThreadBhook = "wtf.s1.pudge:thread-inspector-bhook:1.1.0"
 
     object Kotlin {
         const val stdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"
@@ -58,6 +59,6 @@ object Deps{
 object ClassPaths {
     const val gradlePlugin = "com.android.tools.build:gradle:${Versions.gradlePlugin}"
     const val kotlinPlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
-    const val jfrogBintray = "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
-    const val dcendentsMavenPlugin = "com.github.dcendents:android-maven-gradle-plugin:2.1"
+    const val mavenPlugin = "com.vanniktech:gradle-maven-publish-plugin:0.17.0"
+    const val dokaa = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
 }

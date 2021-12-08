@@ -3,7 +3,6 @@ import wtf.s1.buildsrc.*
 apply plugin: "com.android.application"
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-// apply plugin: 'thread-inspector-plugin'
 
 android {
     compileSdkVersion(Versions.compileSdkVersion)
@@ -41,18 +40,21 @@ android {
     buildFeatures {
         prefab true
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
 
 
-//     debugImplementation(Deps.remoteThreadFlipper)
-//     debugImplementation(Deps.remoteThreadEpic)
-    debugImplementation(project(":thread-flipper"))
-    debugImplementation(project(":thread-bhook"))
-//    debugImplementation(project(":thread-epic"))
+     debugImplementation(Deps.remoteThreadFlipper)
+     debugImplementation(Deps.remoteThreadBhook)
+//    debugImplementation(project(":thread-flipper"))
+//    debugImplementation(project(":thread-bhook"))
 
-    // debugImplementation(Deps.leakCanary)
     debugImplementation(Deps.flipper)
     debugImplementation(Deps.soloader)
 

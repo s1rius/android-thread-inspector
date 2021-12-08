@@ -3,6 +3,8 @@ import wtf.s1.buildsrc.*
 apply plugin: "com.android.library"
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: "org.jetbrains.dokka"
+apply plugin: "com.vanniktech.maven.publish"
 
 android {
     compileSdkVersion(Versions.compileSdkVersion)
