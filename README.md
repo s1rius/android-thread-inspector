@@ -1,12 +1,12 @@
 # android-thread-inspector
 
-一个简单的 [Flipper](https://github.com/facebook/flipper) 插件，简单集成后可以在 Flipper 的桌面程序上查看线程的创建情况，包括线程创建的调用堆栈。
+一个追踪 java 及 native 线程创建的 [Flipper](https://github.com/facebook/flipper) 插件
 
 ![preview](https://github.com/s1rius/android-thread-inspector/blob/master/art/1.png)
 
 # 集成
 
-使用 [buildType](https://developer.android.com/studio/build/build-variants#build-types) 仅在 Debug 模式下集成该插件，用于调试。
+建议仅在仅在 Debug [buildType](https://developer.android.com/studio/build/build-variants#build-types) 下集成该插件，用于调试。
 
 
 添加依赖
@@ -49,3 +49,14 @@ class DebugApp: App() {
 ## 原理
 
 使用了 [bhook](https://github.com/bytedance/bhook) 对`pthread_create`和`pthread_setname_np`函数进行 hook。
+
+
+## 已知问题
+
+- java 线程 id 与 linux 线程 id 不一致，导致 hook 之前获取到的 java 线程会重复显示
+- 1.x 版本不提供 native 的堆栈信息
+
+## 协议
+MIT
+
+感谢 [bhook](https://github.com/bytedance/bhook) 及 [koom](https://github.com/KwaiAppTeam/KOOM) 的贡献者
