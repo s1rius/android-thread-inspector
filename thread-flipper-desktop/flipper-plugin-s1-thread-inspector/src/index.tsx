@@ -240,17 +240,20 @@ export default class S1ThreadTablePlugin extends FlipperPlugin <
     if (method === 'updateThread') {
       let updateThread = payload.newThread
       let curThreads = Array.from(persistedState.threads)
-      let curRows = Array.from(persistedState.rows)
       persistedState.threads.forEach((item, index) => {
           if (item.id == updateThread.id) {
-            console.log("update")
             curThreads.splice(index, 1)
-            curThreads.unshift(updateThread)
-            curThreads.sort((a, b)=> b.createAt - a.createAt)
-            curRows.splice(index, 1)
-            curRows.unshift(processThread(updateThread))
           }
       })
+      curThreads.unshift(updateThread)
+
+      curThreads.sort((a, b)=> a.createAt - b.createAt)
+      let curRows: Array<TableBodyRow> =[]
+
+      curThreads.forEach((item, index)=> {
+        curRows.unshift(processThread(item))  
+      })      
+
       return Object.assign({}, persistedState, {
         threads: curThreads,
         rows: curRows
