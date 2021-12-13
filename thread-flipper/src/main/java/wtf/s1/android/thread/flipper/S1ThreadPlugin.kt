@@ -1,12 +1,12 @@
 package wtf.s1.android.thread.flipper
 
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import com.facebook.flipper.core.FlipperConnection
 import com.facebook.flipper.core.FlipperPlugin
 import wtf.s1.android.thread.OnThreadCreateListener
 import wtf.s1.android.thread.S1Thread
 import wtf.s1.android.thread.ThreadInspector
-import java.lang.Exception
 
 class S1ThreadPlugin : FlipperPlugin, OnThreadCreateListener {
 
@@ -21,6 +21,7 @@ class S1ThreadPlugin : FlipperPlugin, OnThreadCreateListener {
     }
 
     private var connection: FlipperConnection? = null
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onConnect(connection: FlipperConnection?) {
         this.connection = connection
@@ -42,11 +43,12 @@ class S1ThreadPlugin : FlipperPlugin, OnThreadCreateListener {
     override fun onThreadCreate(
         thread: S1Thread
     ) {
-        newRow(thread)
+        handler.post{ newRow(thread) }
     }
 
     override fun onThreadUpdate(thread: S1Thread) {
-        updateRow(thread)
+        handler.post { updateRow(thread) }
+
     }
 
     fun newRow(thread: S1Thread) {
