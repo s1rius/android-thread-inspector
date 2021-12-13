@@ -4,6 +4,8 @@
 
 #include <string>
 #include "thread_call_monitor.h"
+#include <unordered_set>
+#include <vector>
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +52,8 @@ static jmethodID log_thread_start;
 static jmethodID log_thread_set_name;
 static std::atomic_int32_t thread_count = 0;
 static ThreadCallMonitor *monitor;
+static std::unordered_set<std::string> filter_set;
+static std::vector<std::string> sys_lib_names;
 
 static bytehook_stub_t pthread_create_stub;
 static bytehook_stub_t pthread_setname_np_stub;
@@ -153,29 +157,14 @@ static void pthread_setname_np_auto(pthread_t pthread, const char *name) {
 static bool allow_filter(const char *caller_path_name, void *arg) {
     (void) arg;
 
-    if (nullptr != strstr(caller_path_name, "libc.so")) return false;
-    if (nullptr != strstr(caller_path_name, "libbase.so")) return false;
-    if (nullptr != strstr(caller_path_name, "libGLES_mali.so")) return false;
-    if (nullptr != strstr(caller_path_name, "libunwindstack.so")) return false;
-    if (nullptr != strstr(caller_path_name, "libutils.so")) return false;
-    if (nullptr != strstr(caller_path_name, "libEGL.so")) return false;
-    if (nullptr != strstr(caller_path_name, "libhwui.so")) return false;
-    // ......
+    std::string last_path = caller_path_name;
+    std::size_t found = last_path.find_last_of("\\/");
+    if (found > 0) last_path = last_path.substr(found + 1);
 
-    return true;
-}
-
-static bool name_allow_filter(const char *caller_path_name, void *arg) {
-    (void) arg;
-    if (nullptr != strstr(caller_path_name, "libc.so")) return false;
-    return true;
-}
-
-static bool allow_filter_for_hook_all(const char *caller_path_name, void *arg) {
-    (void) arg;
-
-    if (nullptr != strstr(caller_path_name, "libc.so")) return false;
-
+    if (filter_set.count(last_path)) {
+        LOG("filter ignore %s", caller_path_name);
+        return false;
+    }
     return true;
 }
 
@@ -186,6 +175,19 @@ static int hacker_thread_create_on(JNIEnv *env, jobject thiz, jint type) {
     void *pthread_setname_np_proxy = (void *) pthread_setname_np_auto;
 
     if (1 == type) {
+        sys_lib_names = {
+                "libc.so",
+                "libbase.so",
+                "libGLES_mali.so",
+                "libunwindstack.so",
+                "libutils.so",
+                "libEGL.so",
+                "libhwui.so",
+                "libwebviewchromium.so",
+                "libwebviewchromium_loader.so",
+                "libwebviewchromium_plat_support.so",
+        };
+        filter_set.insert(sys_lib_names.begin(), sys_lib_names.end());
         pthread_create_stub = bytehook_hook_partial(allow_filter,
                                                     nullptr,
                                                     nullptr,
@@ -193,7 +195,7 @@ static int hacker_thread_create_on(JNIEnv *env, jobject thiz, jint type) {
                                                     pthread_create_proxy,
                                                     nullptr,
                                                     nullptr);
-        pthread_setname_np_stub = bytehook_hook_partial(name_allow_filter,
+        pthread_setname_np_stub = bytehook_hook_partial(allow_filter,
                                                         nullptr,
                                                         nullptr,
                                                         "pthread_setname_np",
@@ -201,14 +203,15 @@ static int hacker_thread_create_on(JNIEnv *env, jobject thiz, jint type) {
                                                         nullptr,
                                                         nullptr);
     } else {
-        pthread_create_stub = bytehook_hook_partial(allow_filter_for_hook_all,
+        filter_set.insert("libc.so");
+        pthread_create_stub = bytehook_hook_partial(allow_filter,
                                                     nullptr,
                                                     nullptr,
                                                     "pthread_create",
                                                     pthread_create_proxy,
                                                     nullptr,
                                                     nullptr);
-        pthread_setname_np_stub = bytehook_hook_partial(name_allow_filter,
+        pthread_setname_np_stub = bytehook_hook_partial(allow_filter,
                                                         nullptr,
                                                         nullptr,
                                                         "pthread_setname_np",
