@@ -12,15 +12,6 @@ struct thread_holder{
     thread_holder(size_t c): count(c) {}
 };
 
-
-char* strdup(const char* str) {
-    char* newstr = (char*) malloc(strlen(str) + 1);
-    if (newstr) {
-        strcpy(newstr, str);
-    }
-    return newstr;
-}
-
 JNIEnv *AttachEnv(JavaVM* java_vm_) {
     JNIEnv *env = nullptr;
     int status = java_vm_->GetEnv((void **)&env, JNI_VERSION_1_6);

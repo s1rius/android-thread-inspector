@@ -22,6 +22,7 @@ add_library(s1threadhook
         SHARED
         thread_call_monitor.cpp
         threadhook.cpp
+        thread_call.cpp
         third/looper.cpp
         )
 target_compile_features(s1threadhook PUBLIC cxx_std_17)

@@ -25,15 +25,16 @@ extern "C" {
 #include "bytehook.h"
 #include "threads.h"
 #include "threadhook.h"
+#include "third/str_util.h"
 
 #define HACKER_JNI_VERSION    JNI_VERSION_1_6
 #define HACKER_JNI_CLASS_NAME "wtf/s1/android/thread/bhook/S1ThreadHooker"
 #define HACKER_JNI_METHOD_LOG_STACK_TRACE_ "threadCreate"
-#define HACKER_JNI_METHOD_SIGN_LOG_STACK_TRACE "(ILjava/lang/String;)Ljava/lang/String;"
+#define HACKER_JNI_METHOD_SIGN_LOG_STACK_TRACE "(I[B)V"
 #define HACKER_JNI_METHOD_THREAD_START "threadStart"
 #define HACKER_JNI_METHOD_SIGN_THREAD_START "(II)V"
 #define HACKER_JNI_METHOD_THREAD_SET_NAME "threadSetName"
-#define HACKER_JNI_METHOD_SIGN_THREAD_SET_NAME "(ILjava/lang/String;)V"
+#define HACKER_JNI_METHOD_SIGN_THREAD_SET_NAME "(I[B)V"
 #define HACKER_TAG            "thread_hook"
 
 #pragma clang diagnostic push
@@ -53,10 +54,71 @@ static jmethodID log_thread_set_name;
 static std::atomic_int32_t thread_count = 0;
 static ThreadCallMonitor *monitor;
 static std::unordered_set<std::string> filter_set;
-static std::vector<std::string> sys_lib_names;
 
 static bytehook_stub_t pthread_create_stub;
 static bytehook_stub_t pthread_setname_np_stub;
+
+class InnerMonitor : public ThreadCallMonitor {
+
+    void handle(int what, void *data) override {
+
+        auto *env = AttachEnv(jVM);
+        if (nullptr == env) {
+            LOG("looper not attach jvm");
+            auto call = static_cast<ThreadCall *>(data);
+            delete call;
+            return;
+        }
+
+        switch (what) {
+            case ACTION_START: {
+                auto call = static_cast<ThreadCallStart *>(data);
+                env->CallStaticVoidMethod(hook_clazz, log_thread_start, call->tid, call->cid);
+                delete call;
+                break;
+            }
+
+            case ACTION_SET_NAME: {
+                auto call = static_cast<ThreadCallSetName *> (data);
+                if (nullptr != call->name) {
+                    char *name_copy = strdup(call->name);
+                    jbyteArray jname = c_2_jbyteArray(env, name_copy);
+                    if (jname != nullptr) {
+                        env->CallStaticVoidMethod(hook_clazz, log_thread_set_name, call->tid,
+                                                  jname);
+                        env->ReleaseByteArrayElements(jname, reinterpret_cast<jbyte *>(name_copy),
+                                                      0);
+                    } else {
+                        delete[] name_copy;
+                    }
+                }
+                delete call;
+                break;
+            }
+
+            case ACTION_CREATE: {
+                auto call = static_cast<ThreadCallCreate *>(data);
+                if (nullptr == call->stacktrace) return;
+                char *stacktrace = strdup(call->stacktrace);
+                auto jdli = c_2_jbyteArray(env, stacktrace);
+                if (nullptr != jdli) {
+                    env->CallStaticVoidMethod(hook_clazz,
+                                              log_thread_create,
+                                              call->cid, jdli);
+                    env->ReleaseByteArrayElements(jdli, reinterpret_cast<jbyte *>(stacktrace), 0);
+                } else {
+                    delete[] stacktrace;
+                }
+                delete call;
+                break;
+            }
+            default: {
+                auto call = static_cast<ThreadCall *>(data);
+                delete call;
+            }
+        }
+    }
+};
 
 inline static JNIEnv *getEnv() {
     JNIEnv *env;
@@ -66,30 +128,34 @@ inline static JNIEnv *getEnv() {
     return env;
 }
 
-inline static char *thread_create_post(thread_holder *threadHolder, void *lr) {
+inline static void thread_create_post(thread_holder *threadHolder, void *lr) {
     Dl_info info;
     memset(&info, 0, sizeof(info));
     dladdr(lr, &info);
 
-    char *result;
     char *dli;
     asprintf(&dli, "\t at %s (%s) \r\n", info.dli_fname, info.dli_sname);
 
-    if (nullptr == hook_clazz || nullptr == log_thread_create) return result;
+    if (nullptr == hook_clazz || nullptr == log_thread_create) return;
     JNIEnv *env = getEnv();
 
+    // todo get java stacktrace in native
     if (nullptr == env) {
         monitor->t_create(new ThreadCallCreate(threadHolder->count, dli));
     } else {
-        auto jdli = (jstring) env->NewStringUTF(dli);
-        (env->CallStaticObjectMethod(hook_clazz,
-                                     log_thread_create,
-                                     (int) threadHolder->count,
-                                     jdli));
+        auto jdli = c_2_jbyteArray(env, dli);
+        if (nullptr == jdli) {
+            LOG("%d cant get native stack trace", threadHolder->count);
+            return;
+        }
+
+        (env->CallStaticVoidMethod(hook_clazz,
+                                   log_thread_create,
+                                   (int) threadHolder->count,
+                                   jdli));
+        env->ReleaseByteArrayElements(jdli, reinterpret_cast<jbyte *>(dli), 0);
     }
 
-    delete dli;
-    return result;
 }
 
 static void *start_routine_delegate(thread_holder *arg) {
@@ -110,8 +176,6 @@ static void *start_routine_delegate(thread_holder *arg) {
     if (nullptr != *(arg->start_routine)) {
         result = arg->start_routine(arg->start_routine_arg);
     }
-    arg->start_routine = nullptr;
-    arg->start_routine_arg = nullptr;
     delete arg;
     return result;
 }
@@ -123,7 +187,6 @@ static int pthread_create_auto(pthread_t *pthread_ptr, pthread_attr_t const *att
     holder->start_routine = start_routine;
     holder->start_routine_arg = arg;
 
-    monitor->t_create(new ThreadCallCreate(holder->count, nullptr));
     int result = BYTEHOOK_CALL_PREV(pthread_create_auto, pthread_ptr, attr,
                                     reinterpret_cast<void *(*)(void *)>(start_routine_delegate),
                                     holder);
@@ -139,19 +202,8 @@ static void pthread_setname_np_auto(pthread_t pthread, const char *name) {
         return;
     }
     int tid = (int) syscall(SYS_gettid);
-
-
-    JNIEnv *env = getEnv();
-    if (nullptr != env) {
-        char *name_copy = strdup(name);
-        jstring jname = env->NewStringUTF(name_copy);
-        env->CallStaticVoidMethod(hook_clazz, log_thread_set_name, tid, jname);
-        env->ReleaseStringUTFChars(jname, name_copy);
-    } else {
-        char *name_copy = strdup(name);
-        monitor->t_set_name(new ThreadCallSetName(tid, name_copy));
-        delete name_copy;
-    }
+    char *name_copy = strdup(name);
+    monitor->t_set_name(new ThreadCallSetName(tid, name_copy));
 }
 
 static bool allow_filter(const char *caller_path_name, void *arg) {
@@ -170,13 +222,16 @@ static bool allow_filter(const char *caller_path_name, void *arg) {
 
 static int hacker_thread_create_on(JNIEnv *env, jobject thiz, jint type) {
     (void) env, (void) thiz;
+    delete monitor;
+    monitor = new InnerMonitor();
 
     void *pthread_create_proxy = (void *) pthread_create_auto;
     void *pthread_setname_np_proxy = (void *) pthread_setname_np_auto;
 
+    filter_set.insert("libc.so");
+    filter_set.insert("libs1threadhook.so");
     if (1 == type) {
-        sys_lib_names = {
-                "libc.so",
+        std::vector<std::string> sys_lib_names = {
                 "libbase.so",
                 "libGLES_mali.so",
                 "libunwindstack.so",
@@ -203,7 +258,6 @@ static int hacker_thread_create_on(JNIEnv *env, jobject thiz, jint type) {
                                                         nullptr,
                                                         nullptr);
     } else {
-        filter_set.insert("libc.so");
         pthread_create_stub = bytehook_hook_partial(allow_filter,
                                                     nullptr,
                                                     nullptr,
@@ -234,60 +288,9 @@ static int hacker_thread_create_off(JNIEnv *env, jobject thiz) {
         bytehook_unhook(pthread_setname_np_stub);
         pthread_setname_np_stub = nullptr;
     }
+    monitor->quit();
     return 0;
 }
-
-class InnerMonitor : public ThreadCallMonitor {
-
-    void handle(int what, void *data) override {
-        auto tid = (int) syscall(SYS_gettid);
-        char s[16] = "";
-        prctl(PR_GET_NAME, (unsigned long) s, 0, 0, 0);
-        LOG("monitor hand n= %s tid= %d ", s, tid);
-
-        auto *env = AttachEnv(jVM);
-        if (nullptr == env) {
-            LOG("looper not attach jvm");
-            return;
-        }
-
-        switch (what) {
-            case ACTION_START: {
-                auto call = static_cast<ThreadCallStart *>(data);
-                env->CallStaticVoidMethod(hook_clazz, log_thread_start, call->tid, call->cid);
-                delete call;
-                break;
-            }
-
-            case ACTION_SET_NAME: {
-                auto call = static_cast<ThreadCallSetName *> (data);
-                if (nullptr != call->name) {
-                    char *name_copy = strdup(call->name);
-                    jstring jname = env->NewStringUTF(name_copy);
-                    env->CallStaticVoidMethod(hook_clazz, log_thread_set_name, call->tid,
-                                              jname);
-                    env->ReleaseStringUTFChars(jname, name_copy);
-                }
-                delete call;
-                break;
-            }
-
-            case ACTION_CREATE: {
-                auto call = static_cast<ThreadCallCreate *>(data);
-                auto jdli = (jstring) env->NewStringUTF(call->stacktrace);
-                env->CallStaticObjectMethod(hook_clazz,
-                                            log_thread_create,
-                                            call->cid, jdli);
-                delete jdli;
-                delete call;
-                break;
-            }
-            default: {
-
-            }
-        }
-    }
-};
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     (void) reserved;
@@ -325,7 +328,5 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
             {"nativeUnhookThread", "()I",  (void *) hacker_thread_create_off}
     };
     if (JNI_OK != env->RegisterNatives(cls, m, sizeof(m) / sizeof(m[0]))) return JNI_ERR;
-
-    monitor = new InnerMonitor();
     return HACKER_JNI_VERSION;
 }

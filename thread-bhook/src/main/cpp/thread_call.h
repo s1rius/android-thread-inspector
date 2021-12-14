@@ -12,14 +12,12 @@ enum ThreadAction {
     ACTION_SET_NAME
 };
 
-class ThreadCall {
-
-};
+class ThreadCall {};
 
 class ThreadCallStart : public ThreadCall {
 public:
     ThreadCallStart(int tid, int cid) : tid(tid), cid(cid) {}
-
+    ~ThreadCallStart();
     int tid;
     int cid;
 };
@@ -28,7 +26,7 @@ class ThreadCallSetName : public ThreadCall {
 
 public:
     ThreadCallSetName(int tid, char *name) : tid(tid), name(name) {}
-
+    ~ThreadCallSetName();
     int tid;
     char *name;
 };
@@ -37,9 +35,9 @@ class ThreadCallCreate : public ThreadCall {
 
 public:
     ThreadCallCreate(int cid, char *stacktrace) : cid(cid), stacktrace(stacktrace) {}
+    ~ThreadCallCreate();
     int cid;
     char *stacktrace;
 };
-
 
 #endif //ANDROID_THREAD_INSPECTOR_THREAD_CALL_H
