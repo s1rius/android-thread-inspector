@@ -41,10 +41,25 @@ data class S1Thread constructor(
     )
 
 
-    fun update(thread: Thread) {
+    fun update(thread: Thread): S1Thread {
         this.state = thread.state.ordinal.threadState()
         this.isInterrupted = thread.isInterrupted
         this.isAlive = thread.isAlive
+        return this
+    }
+
+    fun update(thread: S1Thread): S1Thread {
+        thread.name?.let { n->
+            if (n.isNotEmpty() && "null" != n) {
+                this.name = n
+            }
+        }
+        thread.stackTraces?.let { stackTraces->
+            if (stackTraces.isNotEmpty()) {
+                this.stackTraces = stackTraces
+            }
+        }
+        return this
     }
 
     override fun equals(other: Any?): Boolean {
@@ -63,13 +78,14 @@ data class S1Thread constructor(
     }
 
     override fun toString(): String {
-        return "S1Thread(id=$id, name='$name', " +
+        return "S1Thread(id=$id, cid=$cid name='$name', " +
                 "group=$group, " +
                 "state='$state', " +
                 "priority=$priority, " +
                 "isDaemon=$isDaemon, " +
                 "isInterrupted=$isInterrupted, " +
-                "createTime=$createTime)"
+                "createTime=$createTime), " +
+                "stacktrace=${stackTraces?.size?:0}"
     }
 }
 

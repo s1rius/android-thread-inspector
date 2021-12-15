@@ -9,20 +9,22 @@ class ThreadLogImp: ThreadLog {
     private val listeners = CopyOnWriteArrayList<OnThreadCreateListener>()
 
     override fun getThread(tid: Long): S1Thread? {
-        return threadMap.get(tid)
+        return threadMap[tid]
     }
 
     override fun onThreadNew(t: S1Thread) {
-        threadMap[t.id] = t
+        val newT = threadMap[t.id]?.update(t) ?: t
+        threadMap[newT.id] = newT
         listeners.forEach {
-            it.onThreadCreate(t)
+            it.onThreadCreate(newT)
         }
     }
 
     override fun onThreadUpdate(t: S1Thread) {
-        threadMap[t.id] = t
+        val newT = threadMap[t.id]?.update(t) ?: t
+        threadMap[t.id] = newT
         listeners.forEach {
-            it.onThreadUpdate(t)
+            it.onThreadUpdate(newT)
         }
     }
 

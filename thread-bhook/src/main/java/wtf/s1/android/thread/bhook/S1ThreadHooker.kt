@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package wtf.s1.android.thread.bhook
 
 import android.annotation.SuppressLint
@@ -14,10 +16,14 @@ object S1ThreadHooker {
 
     const val HOOK_ALL = 0
     const val HOOK_APP = 1
+    private const val DEBUG = false
+    private const val TAG = "thread_hook"
 
-    val stackCache = ConcurrentHashMap<Int, String>()
-    val idMap = ConcurrentHashMap<Int, Int>()
-    val nameMap = ConcurrentHashMap<Int, String>()
+    //ugly fixme
+    private val c2stack = ConcurrentHashMap<Int, String>()
+    private val c2t = ConcurrentHashMap<Int, Int>()
+    private val t2c = ConcurrentHashMap<Int, Int>()
+    private val t2name = ConcurrentHashMap<Int, String>()
 
     init {
         System.loadLibrary("s1threadhook")
@@ -25,11 +31,11 @@ object S1ThreadHooker {
 
     @SuppressLint("DefaultLocale")
     @JvmStatic
-    fun threadCreate(cid: Int, nativeStack: String?): String {
+    fun threadCreate(cid: Int, nativeStack: ByteArray?) {
         val sb: StringBuilder = StringBuilder()
         if (nativeStack != null) {
-            sb.append(nativeStack)
-            val stackTrace: Array<StackTraceElement> = Thread.currentThread().getStackTrace()
+            sb.append(String(nativeStack))
+            val stackTrace: Array<StackTraceElement> = Thread.currentThread().stackTrace
             for (s: StackTraceElement in stackTrace) {
                 if (!filterStacktrace(s)) {
                     sb.append("\t at ")
@@ -38,36 +44,35 @@ object S1ThreadHooker {
                 }
             }
 
-            stackCache[cid] = sb.toString();
-            if (idMap.contains(cid)) {
-                idMap.get(cid)?.let {tid->
+            c2stack[cid] = sb.toString()
+            if (c2t.contains(cid)) {
+                c2t[cid]?.let { tid->
                     updateThread(cid, tid)
                 }
             }
+            if (DEBUG) Log.i(TAG, "catch stacktrace cid = $cid stack = ${stackTrace.size}")
         }
-        return sb.toString()
     }
 
     @JvmStatic
     fun threadStart(tid: Int, cid: Int) {
-        idMap[cid] = tid;
+        c2t[cid] = tid
+        t2c[tid] = cid
         updateThread(cid, tid)
     }
 
+    @Suppress("ConvertTwoComparisonsToRangeCheck")
     private fun updateThread(cid: Int, tid: Int) {
 
-        var s1thread = ThreadInspector.getThread(tid);
+        var s1thread = ThreadInspector.getThread(tid)
 
         if (s1thread == null) {
             s1thread = S1Thread(cid.toLong(), tid.toLong())
-            val name: String? = nameMap.remove(tid)
-            s1thread.name = name
-            ThreadInspector.threadCreate(s1thread)
         }
 
         var needUpdate = false
-        if (stackCache.containsKey(cid)) {
-            val stackString: String? = stackCache.remove(cid)
+        if (c2stack.containsKey(cid)) {
+            val stackString: String? = c2stack.remove(cid)
             if (!TextUtils.isEmpty(stackString)) {
                 needUpdate = true
                 s1thread.stackTraces = stackString?.split("\n")
@@ -82,7 +87,7 @@ object S1ThreadHooker {
                 }
             }
         }
-        val name: String? = nameMap.remove(tid)
+        val name: String? = t2name.remove(tid)
         if (!TextUtils.isEmpty(name)) {
             needUpdate = true
             s1thread.name = name
@@ -90,24 +95,26 @@ object S1ThreadHooker {
 
         if (needUpdate) {
             ThreadInspector.threadUpdate(s1thread)
+        } else {
+            ThreadInspector.threadCreate(s1thread)
         }
+        if (DEBUG) Log.i(TAG, "$s1thread")
     }
 
     @JvmStatic
-    fun threadSetName(tid: Int, name: String) {
-        val s1Thread = ThreadInspector.getThread(tid)
-        if (s1Thread == null) {
-            nameMap[tid] = name
-        } else {
-            s1Thread.name = name;
-            ThreadInspector.threadUpdate(s1Thread)
+    fun threadSetName(tid: Int, name: ByteArray?) {
+        if (name == null) return
+        t2name[tid] = String(name)
+        t2c[tid]?.let {
+            updateThread(it, tid)
         }
+        if (DEBUG) Log.i(TAG, "catch name tid = $tid name = ${String(name)}")
     }
 
     private fun filterStacktrace(s: StackTraceElement): Boolean {
-        return (TextUtils.equals(s.getClassName(), S1ThreadHooker::class.java.getName())
-                || s.getMethodName().contains("getStackTrace")
-                || s.getMethodName().contains("getThreadStackTrace")
+        return (TextUtils.equals(s.className, S1ThreadHooker::class.java.name)
+                || s.methodName.contains("getStackTrace")
+                || s.methodName.contains("getThreadStackTrace")
                 || TextUtils.isEmpty(s.toString()))
     }
 
